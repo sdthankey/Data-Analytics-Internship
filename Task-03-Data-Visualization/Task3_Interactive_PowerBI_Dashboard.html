@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeOrbit Tech — Task 3: Executive Retail Sales Intelligence Dashboard (Power BI Interactive Edition)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .slicer-btn.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4), 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+    .tab-btn.active {
+      border-bottom: 2px solid #0ea5e9;
+      color: #0ea5e9;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-200" id="app-body">
+
+  <!-- Top Power BI Executive Header Bar -->
+  <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 lg:px-6 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+          <svg class="w-6 h-6 text-slate-950" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4 13h4v7H4v-7zm6-5h4v12h-4V8zm6-4h4v16h-4V4z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">CodeOrbit Tech Internship • Task 3</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">100% Verified Dataset (40 Orders)</span>
+          </div>
+          <h1 class="text-lg lg:text-xl font-extrabold tracking-tight text-white mt-0.5">Executive Retail Sales Intelligence — Power BI Interactive Dashboard</h1>
+        </div>
+      </div>
+
+      <!-- View Tabs & Actions -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center bg-slate-800/80 rounded-lg p-1 border border-slate-700">
+          <button type="button" id="tab-overview" data-tab="overview" class="view-tab-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-sky-600 text-white transition">Executive Dashboard</button>
+          <button type="button" id="tab-products" data-tab="products" class="view-tab-btn px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition">Product & Category Matrix</button>
+          <button type="button" id="tab-orders" data-tab="orders" class="view-tab-btn px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 hover:text-white transition">Cleaned Order Explorer (40)</button>
+        </div>
+
+        <button type="button" id="btn-export-csv" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+          Export Filtered CSV
+        </button>
+
+        <button type="button" id="btn-reset-filters" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          Reset Slicers
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Power BI Slicer Bar -->
+  <section class="bg-slate-900/60 border-b border-slate-800/80 px-4 lg:px-6 py-3">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+      <!-- Region Slicer -->
+      <div class="md:col-span-4 flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Region Slicer:</span>
+        <button type="button" data-filter-region="ALL" class="slicer-btn region-slicer active px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">All</button>
+        <button type="button" data-filter-region="North" class="slicer-btn region-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">North</button>
+        <button type="button" data-filter-region="West" class="slicer-btn region-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">West</button>
+        <button type="button" data-filter-region="South" class="slicer-btn region-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">South</button>
+        <button type="button" data-filter-region="East" class="slicer-btn region-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">East</button>
+      </div>
+
+      <!-- Category Slicer -->
+      <div class="md:col-span-5 flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Category Slicer:</span>
+        <button type="button" data-filter-category="ALL" class="slicer-btn category-slicer active px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">All</button>
+        <button type="button" data-filter-category="Electronics" class="slicer-btn category-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">Electronics</button>
+        <button type="button" data-filter-category="Furniture" class="slicer-btn category-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">Furniture</button>
+        <button type="button" data-filter-category="Office Supplies" class="slicer-btn category-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">Office Supplies</button>
+      </div>
+
+      <!-- Quarter Slicer -->
+      <div class="md:col-span-3 flex flex-wrap items-center justify-start md:justify-end gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Period:</span>
+        <button type="button" data-filter-quarter="ALL" class="slicer-btn quarter-slicer active px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">H1 (Jan–Jun)</button>
+        <button type="button" data-filter-quarter="Q1" class="slicer-btn quarter-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">Q1</button>
+        <button type="button" data-filter-quarter="Q2" class="slicer-btn quarter-slicer px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 transition">Q2</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-6 py-5 space-y-5">
+
+    <!-- Active Filter Pill Status & Toast -->
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-2.5">
+      <div class="flex items-center gap-2 text-xs text-slate-300">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Active Filter Scope:</span>
+        <strong id="active-filter-summary" class="text-sky-400 font-semibold">All Regions • All Categories • H1 2026 (Jan–Jun)</strong>
+      </div>
+      <div id="status-toast" class="text-xs font-medium text-emerald-400 hidden">CSV exported!</div>
+    </div>
+
+    <!-- 6 Executive KPI Cards Row -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <!-- KPI 1: Total Net Sales -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 to-blue-600"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Net Revenue</p>
+        <p id="kpi-net-sales" class="text-xl lg:text-2xl font-extrabold text-white mt-1">$24,032.50</p>
+        <p id="kpi-net-sub" class="text-[11px] text-emerald-400 font-medium mt-1">93.9% of $25,600 Gross</p>
+      </div>
+
+      <!-- KPI 2: Average Order Value -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 to-purple-600"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Avg Order Value (AOV)</p>
+        <p id="kpi-aov" class="text-xl lg:text-2xl font-extrabold text-white mt-1">$600.81</p>
+        <p id="kpi-aov-sub" class="text-[11px] text-sky-400 font-medium mt-1">Net Revenue per Order</p>
+      </div>
+
+      <!-- KPI 3: Completed Orders -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-600"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Completed Orders</p>
+        <p id="kpi-orders" class="text-xl lg:text-2xl font-extrabold text-white mt-1">40</p>
+        <p id="kpi-orders-sub" class="text-[11px] text-slate-400 font-medium mt-1">100% Deduplicated IDs</p>
+      </div>
+
+      <!-- KPI 4: Total Units Sold -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Units Shipped</p>
+        <p id="kpi-units" class="text-xl lg:text-2xl font-extrabold text-white mt-1">108</p>
+        <p id="kpi-units-sub" class="text-[11px] text-amber-400 font-medium mt-1">2.70 Avg Units / Order</p>
+      </div>
+
+      <!-- KPI 5: Total Discounts -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 to-pink-600"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Promotional Discounts</p>
+        <p id="kpi-discounts" class="text-xl lg:text-2xl font-extrabold text-white mt-1">$1,567.50</p>
+        <p id="kpi-discounts-sub" class="text-[11px] text-rose-400 font-medium mt-1">6.12% Effective Rate</p>
+      </div>
+
+      <!-- KPI 6: Top Revenue SKU -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-sky-600"></div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Top Revenue Product</p>
+        <p id="kpi-top-prod" class="text-sm lg:text-base font-extrabold text-white mt-1 truncate">ProBook Laptop 15</p>
+        <p id="kpi-top-prod-sub" class="text-[11px] text-cyan-400 font-medium mt-1">$6,720.00 (28.0% Share)</p>
+      </div>
+    </div>
+
+    <!-- TAB 1: EXECUTIVE DASHBOARD VIEW -->
+    <div id="view-overview" class="space-y-5">
+      <!-- 2x2 Visual Chart Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Chart 1: Monthly Revenue & Order Trend -->
+        <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white">1. Monthly Net Sales Revenue & Order Volume Trend (H1 2026)</h2>
+              <p class="text-xs text-slate-400">Combo Bar & Line Chart tracking monthly revenue acceleration (+56.5% Jan to Jun)</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">Time-Series</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-monthly"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Category Share Doughnut -->
+        <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white">2. Net Sales Share by Product Category</h2>
+              <p class="text-xs text-slate-400">Revenue contribution across Electronics, Furniture & Office Supplies</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Category Mix</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-category"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Regional Performance Horizontal Bar -->
+        <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white">3. Regional Net Sales & AOV Comparison</h2>
+              <p class="text-xs text-slate-400">North ($7,769) and West ($7,085.50) lead total regional revenue</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Geography</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-region"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Top Products Horizontal Bar -->
+        <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white">4. Product Revenue Leaderboard ($ Net Sales)</h2>
+              <p class="text-xs text-slate-400">Ranked revenue performance across all retail products</p>
+            </div>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">SKU Ranking</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-products"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive Summary Tables Row (Category & Region Side-by-Side) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Category Table -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <h3 class="text-sm font-bold text-white mb-3">Category Summary Matrix (with In-Cell Revenue Bars)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase">
+                  <th class="py-2 px-2">Category</th>
+                  <th class="py-2 px-2 text-right">Orders</th>
+                  <th class="py-2 px-2 text-right">Units</th>
+                  <th class="py-2 px-2 text-right">Net Sales</th>
+                  <th class="py-2 px-2 text-right">AOV</th>
+                  <th class="py-2 px-2 w-28">Share %</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-category" class="divide-y divide-slate-800/60"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Region Table -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <h3 class="text-sm font-bold text-white mb-3">Regional Summary Matrix (with In-Cell Revenue Bars)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase">
+                  <th class="py-2 px-2">Region</th>
+                  <th class="py-2 px-2 text-right">Orders</th>
+                  <th class="py-2 px-2 text-right">Units</th>
+                  <th class="py-2 px-2 text-right">Net Sales</th>
+                  <th class="py-2 px-2 text-right">AOV</th>
+                  <th class="py-2 px-2 w-28">Share %</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-region" class="divide-y divide-slate-800/60"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PRODUCT & CATEGORY MATRIX VIEW -->
+    <div id="view-products" class="hidden space-y-5">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-white">Product-Level Performance Leaderboard & Profitability Matrix</h2>
+            <p class="text-xs text-slate-400">Complete SKU breakdown sorted by Net Sales Revenue with visual share bars</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 uppercase bg-slate-950/50">
+                <th class="py-2.5 px-3">Rank</th>
+                <th class="py-2.5 px-3">Product Name</th>
+                <th class="py-2.5 px-3">Category</th>
+                <th class="py-2.5 px-3 text-right">Orders</th>
+                <th class="py-2.5 px-3 text-right">Units Sold</th>
+                <th class="py-2.5 px-3 text-right">Gross Sales</th>
+                <th class="py-2.5 px-3 text-right">Discounts</th>
+                <th class="py-2.5 px-3 text-right">Net Sales</th>
+                <th class="py-2.5 px-3 text-right">Avg Order Value</th>
+                <th class="py-2.5 px-3 w-36">Revenue Share</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-products" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CLEANED ORDER EXPLORER VIEW -->
+    <div id="view-orders" class="hidden space-y-4">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-white">Cleaned Retail Sales Order Explorer (Task 1 & Task 2 Validated Dataset)</h2>
+            <p class="text-xs text-slate-400">Search by Order ID, Customer Name, or Product — dynamically linked to top slicers</p>
+          </div>
+          <div class="w-full sm:w-72">
+            <input type="text" id="input-order-search" placeholder="Search customer, order ID, product..." class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          </div>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 bg-slate-950">
+              <tr class="border-b border-slate-800 text-slate-400 uppercase">
+                <th class="py-2 px-2.5">Order ID</th>
+                <th class="py-2 px-2.5">Order Date</th>
+                <th class="py-2 px-2.5">Customer Name</th>
+                <th class="py-2 px-2.5">Region</th>
+                <th class="py-2 px-2.5">Category</th>
+                <th class="py-2 px-2.5">Product</th>
+                <th class="py-2 px-2.5 text-right">Qty</th>
+                <th class="py-2 px-2.5 text-right">Unit Price</th>
+                <th class="py-2 px-2.5 text-right">Disc %</th>
+                <th class="py-2 px-2.5 text-right">Net Sales</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-orders" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Complete 40-order cleaned dataset from Task 1 & Task 2
+    const SALES_DATA = [
+      { order_id: "ORD-1001", order_date: "2026-01-05", order_month: "2026-01", quarter: "Q1", customer_name: "Aarav Sharma", region: "North", category: "Electronics", product: "ProBook Laptop 15", quantity: 1, unit_price: 1200.0, discount_pct: 5.0, gross_sales: 1200.0, discount_amount: 60.0, total_sales: 1140.0 },
+      { order_id: "ORD-1002", order_date: "2026-01-12", order_month: "2026-01", quarter: "Q1", customer_name: "Priya Patel", region: "West", category: "Furniture", product: "Ergonomic Mesh Chair", quantity: 2, unit_price: 250.0, discount_pct: 0.0, gross_sales: 500.0, discount_amount: 0.0, total_sales: 500.0 },
+      { order_id: "ORD-1003", order_date: "2026-01-18", order_month: "2026-01", quarter: "Q1", customer_name: "Rohan Mehta", region: "East", category: "Office Supplies", product: "A4 Copy Paper Case", quantity: 5, unit_price: 40.0, discount_pct: 0.0, gross_sales: 200.0, discount_amount: 0.0, total_sales: 200.0 },
+      { order_id: "ORD-1004", order_date: "2026-01-22", order_month: "2026-01", quarter: "Q1", customer_name: "Neha Gupta", region: "South", category: "Electronics", product: "Noise-Cancelling Headphones", quantity: 3, unit_price: 180.0, discount_pct: 10.0, gross_sales: 540.0, discount_amount: 54.0, total_sales: 486.0 },
+      { order_id: "ORD-1005", order_date: "2026-01-25", order_month: "2026-01", quarter: "Q1", customer_name: "Vikram Singh", region: "North", category: "Electronics", product: "4K UltraHD Monitor", quantity: 2, unit_price: 400.0, discount_pct: 0.0, gross_sales: 800.0, discount_amount: 0.0, total_sales: 800.0 },
+      { order_id: "ORD-1006", order_date: "2026-01-29", order_month: "2026-01", quarter: "Q1", customer_name: "Ananya Iyer", region: "West", category: "Office Supplies", product: "Mechanical Keyboard", quantity: 2, unit_price: 120.0, discount_pct: 0.0, gross_sales: 240.0, discount_amount: 0.0, total_sales: 240.0 },
+      { order_id: "ORD-1007", order_date: "2026-02-03", order_month: "2026-02", quarter: "Q1", customer_name: "Karthik Nair", region: "South", category: "Furniture", product: "Standing Desk Frame", quantity: 1, unit_price: 650.0, discount_pct: 10.0, gross_sales: 650.0, discount_amount: 65.0, total_sales: 585.0 },
+      { order_id: "ORD-1008", order_date: "2026-02-08", order_month: "2026-02", quarter: "Q1", customer_name: "Divya Joshi", region: "East", category: "Electronics", product: "Wireless Ergonomic Mouse", quantity: 4, unit_price: 50.0, discount_pct: 0.0, gross_sales: 200.0, discount_amount: 0.0, total_sales: 200.0 },
+      { order_id: "ORD-1009", order_date: "2026-02-14", order_month: "2026-02", quarter: "Q1", customer_name: "Siddharth Rao", region: "East", category: "Furniture", product: "Executive Bookshelf", quantity: 1, unit_price: 320.0, discount_pct: 5.0, gross_sales: 320.0, discount_amount: 16.0, total_sales: 304.0 },
+      { order_id: "ORD-1010", order_date: "2026-02-19", order_month: "2026-02", quarter: "Q1", customer_name: "Meera Krishnan", region: "North", category: "Office Supplies", product: "LaserJet Toner Cartridge", quantity: 3, unit_price: 90.0, discount_pct: 0.0, gross_sales: 270.0, discount_amount: 0.0, total_sales: 270.0 },
+      { order_id: "ORD-1011", order_date: "2026-02-23", order_month: "2026-02", quarter: "Q1", customer_name: "Arjun Malhotra", region: "West", category: "Electronics", product: "ProBook Laptop 15", quantity: 1, unit_price: 1200.0, discount_pct: 10.0, gross_sales: 1200.0, discount_amount: 120.0, total_sales: 1080.0 },
+      { order_id: "ORD-1012", order_date: "2026-02-27", order_month: "2026-02", quarter: "Q1", customer_name: "Pooja Verma", region: "East", category: "Furniture", product: "Conference Table 8-Seat", quantity: 1, unit_price: 1100.0, discount_pct: 15.0, gross_sales: 1100.0, discount_amount: 165.0, total_sales: 935.0 },
+      { order_id: "ORD-1013", order_date: "2026-03-04", order_month: "2026-03", quarter: "Q1", customer_name: "Rahul Deshmukh", region: "South", category: "Office Supplies", product: "A4 Copy Paper Case", quantity: 6, unit_price: 40.0, discount_pct: 5.0, gross_sales: 240.0, discount_amount: 12.0, total_sales: 228.0 },
+      { order_id: "ORD-1014", order_date: "2026-03-09", order_month: "2026-03", quarter: "Q1", customer_name: "Sneha Reddy", region: "North", category: "Electronics", product: "4K UltraHD Monitor", quantity: 2, unit_price: 400.0, discount_pct: 5.0, gross_sales: 800.0, discount_amount: 40.0, total_sales: 760.0 },
+      { order_id: "ORD-1015", order_date: "2026-03-15", order_month: "2026-03", quarter: "Q1", customer_name: "Aditya Kapoor", region: "West", category: "Furniture", product: "Ergonomic Mesh Chair", quantity: 2, unit_price: 250.0, discount_pct: 0.0, gross_sales: 500.0, discount_amount: 0.0, total_sales: 500.0 },
+      { order_id: "ORD-1016", order_date: "2026-03-20", order_month: "2026-03", quarter: "Q1", customer_name: "Kavita Choudhary", region: "East", category: "Electronics", product: "Noise-Cancelling Headphones", quantity: 2, unit_price: 180.0, discount_pct: 0.0, gross_sales: 360.0, discount_amount: 0.0, total_sales: 360.0 },
+      { order_id: "ORD-1017", order_date: "2026-03-24", order_month: "2026-03", quarter: "Q1", customer_name: "Manish Tiwari", region: "South", category: "Office Supplies", product: "Mechanical Keyboard", quantity: 3, unit_price: 120.0, discount_pct: 5.0, gross_sales: 360.0, discount_amount: 18.0, total_sales: 342.0 },
+      { order_id: "ORD-1018", order_date: "2026-03-29", order_month: "2026-03", quarter: "Q1", customer_name: "Nisha Agarwal", region: "North", category: "Furniture", product: "Standing Desk Frame", quantity: 2, unit_price: 650.0, discount_pct: 10.0, gross_sales: 1300.0, discount_amount: 130.0, total_sales: 1170.0 },
+      { order_id: "ORD-1019", order_date: "2026-04-02", order_month: "2026-04", quarter: "Q2", customer_name: "Varun Saxena", region: "West", category: "Electronics", product: "ProBook Laptop 15", quantity: 2, unit_price: 1200.0, discount_pct: 10.0, gross_sales: 2400.0, discount_amount: 240.0, total_sales: 2160.0 },
+      { order_id: "ORD-1020", order_date: "2026-04-07", order_month: "2026-04", quarter: "Q2", customer_name: "Tanya Bhatia", region: "East", category: "Office Supplies", product: "LaserJet Toner Cartridge", quantity: 4, unit_price: 90.0, discount_pct: 5.0, gross_sales: 360.0, discount_amount: 18.0, total_sales: 342.0 },
+      { order_id: "ORD-1021", order_date: "2026-04-12", order_month: "2026-04", quarter: "Q2", customer_name: "Deepak Kulkarni", region: "South", category: "Electronics", product: "Wireless Ergonomic Mouse", quantity: 5, unit_price: 50.0, discount_pct: 0.0, gross_sales: 250.0, discount_amount: 0.0, total_sales: 250.0 },
+      { order_id: "ORD-1022", order_date: "2026-04-17", order_month: "2026-04", quarter: "Q2", customer_name: "Swati Mishra", region: "North", category: "Furniture", product: "Executive Bookshelf", quantity: 2, unit_price: 320.0, discount_pct: 0.0, gross_sales: 640.0, discount_amount: 0.0, total_sales: 640.0 },
+      { order_id: "ORD-1023", order_date: "2026-04-22", order_month: "2026-04", quarter: "Q2", customer_name: "Gaurav Bansal", region: "West", category: "Office Supplies", product: "A4 Copy Paper Case", quantity: 8, unit_price: 40.0, discount_pct: 10.0, gross_sales: 320.0, discount_amount: 32.0, total_sales: 288.0 },
+      { order_id: "ORD-1024", order_date: "2026-04-26", order_month: "2026-04", quarter: "Q2", customer_name: "Ritu Chatterjee", region: "East", category: "Electronics", product: "4K UltraHD Monitor", quantity: 1, unit_price: 400.0, discount_pct: 0.0, gross_sales: 400.0, discount_amount: 0.0, total_sales: 400.0 },
+      { order_id: "ORD-1025", order_date: "2026-05-01", order_month: "2026-05", quarter: "Q2", customer_name: "Nikhil Menon", region: "South", category: "Furniture", product: "Conference Table 8-Seat", quantity: 1, unit_price: 1100.0, discount_pct: 10.0, gross_sales: 1100.0, discount_amount: 110.0, total_sales: 990.0 },
+      { order_id: "ORD-1026", order_date: "2026-05-06", order_month: "2026-05", quarter: "Q2", customer_name: "Shruti Pandey", region: "North", category: "Electronics", product: "Noise-Cancelling Headphones", quantity: 4, unit_price: 180.0, discount_pct: 5.0, gross_sales: 720.0, discount_amount: 36.0, total_sales: 684.0 },
+      { order_id: "ORD-1027", order_date: "2026-05-11", order_month: "2026-05", quarter: "Q2", customer_name: "Akash Jain", region: "West", category: "Office Supplies", product: "Mechanical Keyboard", quantity: 2, unit_price: 120.0, discount_pct: 0.0, gross_sales: 240.0, discount_amount: 0.0, total_sales: 240.0 },
+      { order_id: "ORD-1028", order_date: "2026-05-16", order_month: "2026-05", quarter: "Q2", customer_name: "Pallavi Sinha", region: "East", category: "Furniture", product: "Ergonomic Mesh Chair", quantity: 3, unit_price: 250.0, discount_pct: 10.0, gross_sales: 750.0, discount_amount: 75.0, total_sales: 675.0 },
+      { order_id: "ORD-1029", order_date: "2026-05-21", order_month: "2026-05", quarter: "Q2", customer_name: "Harsh Vardhan", region: "South", category: "Electronics", product: "ProBook Laptop 15", quantity: 1, unit_price: 1200.0, discount_pct: 0.0, gross_sales: 1200.0, discount_amount: 0.0, total_sales: 1200.0 },
+      { order_id: "ORD-1030", order_date: "2026-05-26", order_month: "2026-05", quarter: "Q2", customer_name: "Bhavna Arora", region: "North", category: "Office Supplies", product: "LaserJet Toner Cartridge", quantity: 2, unit_price: 90.0, discount_pct: 0.0, gross_sales: 180.0, discount_amount: 0.0, total_sales: 180.0 },
+      { order_id: "ORD-1031", order_date: "2026-05-30", order_month: "2026-05", quarter: "Q2", customer_name: "Yash Thakur", region: "West", category: "Furniture", product: "Standing Desk Frame", quantity: 1, unit_price: 650.0, discount_pct: 5.0, gross_sales: 650.0, discount_amount: 32.5, total_sales: 617.5 },
+      { order_id: "ORD-1032", order_date: "2026-06-03", order_month: "2026-06", quarter: "Q2", customer_name: "Komal Shah", region: "East", category: "Electronics", product: "Wireless Ergonomic Mouse", quantity: 2, unit_price: 50.0, discount_pct: 0.0, gross_sales: 100.0, discount_amount: 0.0, total_sales: 100.0 },
+      { order_id: "ORD-1033", order_date: "2026-06-08", order_month: "2026-06", quarter: "Q2", customer_name: "Pranav Gokhale", region: "South", category: "Office Supplies", product: "A4 Copy Paper Case", quantity: 10, unit_price: 40.0, discount_pct: 10.0, gross_sales: 400.0, discount_amount: 40.0, total_sales: 360.0 },
+      { order_id: "ORD-1034", order_date: "2026-06-13", order_month: "2026-06", quarter: "Q2", customer_name: "Sonal Kashyap", region: "North", category: "Electronics", product: "4K UltraHD Monitor", quantity: 3, unit_price: 400.0, discount_pct: 10.0, gross_sales: 1200.0, discount_amount: 120.0, total_sales: 1080.0 },
+      { order_id: "ORD-1035", order_date: "2026-06-17", order_month: "2026-06", quarter: "Q2", customer_name: "Abhishek Bose", region: "West", category: "Furniture", product: "Executive Bookshelf", quantity: 1, unit_price: 320.0, discount_pct: 0.0, gross_sales: 320.0, discount_amount: 0.0, total_sales: 320.0 },
+      { order_id: "ORD-1036", order_date: "2026-06-21", order_month: "2026-06", quarter: "Q2", customer_name: "Mansi Trivedi", region: "East", category: "Office Supplies", product: "Mechanical Keyboard", quantity: 4, unit_price: 120.0, discount_pct: 5.0, gross_sales: 480.0, discount_amount: 24.0, total_sales: 456.0 },
+      { order_id: "ORD-1037", order_date: "2026-06-24", order_month: "2026-06", quarter: "Q2", customer_name: "Vivek Pillai", region: "South", category: "Electronics", product: "Noise-Cancelling Headphones", quantity: 2, unit_price: 180.0, discount_pct: 0.0, gross_sales: 360.0, discount_amount: 0.0, total_sales: 360.0 },
+      { order_id: "ORD-1038", order_date: "2026-06-27", order_month: "2026-06", quarter: "Q2", customer_name: "Chitra Nambiar", region: "North", category: "Furniture", product: "Conference Table 8-Seat", quantity: 1, unit_price: 1100.0, discount_pct: 5.0, gross_sales: 1100.0, discount_amount: 55.0, total_sales: 1045.0 },
+      { order_id: "ORD-1039", order_date: "2026-06-29", order_month: "2026-06", quarter: "Q2", customer_name: "Rajeshwari Devi", region: "West", category: "Electronics", product: "ProBook Laptop 15", quantity: 1, unit_price: 1200.0, discount_pct: 5.0, gross_sales: 1200.0, discount_amount: 60.0, total_sales: 1140.0 },
+      { order_id: "ORD-1040", order_date: "2026-06-30", order_month: "2026-06", quarter: "Q2", customer_name: "Kunal Chatterjee", region: "East", category: "Office Supplies", product: "LaserJet Toner Cartridge", quantity: 5, unit_price: 90.0, discount_pct: 10.0, gross_sales: 450.0, discount_amount: 45.0, total_sales: 405.0 }
+    ];
+
+    const state = {
+      region: "ALL",
+      category: "ALL",
+      quarter: "ALL",
+      search: "",
+      activeTab: "overview"
+    };
+
+    const fmtCurrency = (v) => "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtInt = (v) => Number(v).toLocaleString("en-US");
+
+    let chartMonthly = null;
+    let chartCategory = null;
+    let chartRegion = null;
+    let chartProducts = null;
+
+    function getFilteredData() {
+      return SALES_DATA.filter(row => {
+        if (state.region !== "ALL" && row.region !== state.region) return false;
+        if (state.category !== "ALL" && row.category !== state.category) return false;
+        if (state.quarter !== "ALL" && row.quarter !== state.quarter) return false;
+        if (state.search.trim() !== "") {
+          const q = state.search.toLowerCase();
+          const match = row.order_id.toLowerCase().includes(q) ||
+                        row.customer_name.toLowerCase().includes(q) ||
+                        row.product.toLowerCase().includes(q) ||
+                        row.category.toLowerCase().includes(q) ||
+                        row.region.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        return true;
+      });
+    }
+
+    function aggregateBy(rows, keyFn) {
+      const map = new Map();
+      for (const r of rows) {
+        const k = keyFn(r);
+        if (!map.has(k)) {
+          map.set(k, { key: k, orders: 0, units: 0, gross: 0, discount: 0, net: 0, category: r.category });
+        }
+        const item = map.get(k);
+        item.orders += 1;
+        item.units += r.quantity;
+        item.gross += r.gross_sales;
+        item.discount += r.discount_amount;
+        item.net += r.total_sales;
+      }
+      return Array.from(map.values());
+    }
+
+    function renderDashboard() {
+      const rows = getFilteredData();
+      const totalNet = rows.reduce((s, r) => s + r.total_sales, 0);
+      const totalGross = rows.reduce((s, r) => s + r.gross_sales, 0);
+      const totalDisc = rows.reduce((s, r) => s + r.discount_amount, 0);
+      const totalOrders = rows.length;
+      const totalUnits = rows.reduce((s, r) => s + r.quantity, 0);
+      const aov = totalOrders > 0 ? totalNet / totalOrders : 0;
+
+      // Update Active Filter Summary
+      const rTxt = state.region === "ALL" ? "All Regions" : `${state.region} Region`;
+      const cTxt = state.category === "ALL" ? "All Categories" : state.category;
+      const qTxt = state.quarter === "ALL" ? "H1 2026 (Jan–Jun)" : `${state.quarter} 2026`;
+      document.getElementById("active-filter-summary").textContent = `${rTxt} • ${cTxt} • ${qTxt} (${totalOrders} Orders)`;
+
+      // Update 6 KPI Cards
+      document.getElementById("kpi-net-sales").textContent = fmtCurrency(totalNet);
+      const realRate = totalGross > 0 ? ((totalNet / totalGross) * 100).toFixed(1) : "0.0";
+      document.getElementById("kpi-net-sub").textContent = `${realRate}% of ${fmtCurrency(totalGross)} Gross`;
+
+      document.getElementById("kpi-aov").textContent = fmtCurrency(aov);
+      document.getElementById("kpi-aov-sub").textContent = totalOrders > 0 ? `Across ${totalOrders} Filtered Orders` : "No matching orders";
+
+      document.getElementById("kpi-orders").textContent = fmtInt(totalOrders);
+      document.getElementById("kpi-orders-sub").textContent = `${((totalOrders / 40) * 100).toFixed(0)}% of Total H1 Orders`;
+
+      document.getElementById("kpi-units").textContent = fmtInt(totalUnits);
+      const upo = totalOrders > 0 ? (totalUnits / totalOrders).toFixed(2) : "0.00";
+      document.getElementById("kpi-units-sub").textContent = `${upo} Avg Units / Order`;
+
+      document.getElementById("kpi-discounts").textContent = fmtCurrency(totalDisc);
+      const discRate = totalGross > 0 ? ((totalDisc / totalGross) * 100).toFixed(2) : "0.00";
+      document.getElementById("kpi-discounts-sub").textContent = `${discRate}% Effective Discount`;
+
+      const prodAgg = aggregateBy(rows, r => r.product).sort((a, b) => b.net - a.net);
+      if (prodAgg.length > 0) {
+        const topP = prodAgg[0];
+        const shareP = totalNet > 0 ? ((topP.net / totalNet) * 100).toFixed(1) : "0.0";
+        document.getElementById("kpi-top-prod").textContent = topP.key;
+        document.getElementById("kpi-top-prod-sub").textContent = `${fmtCurrency(topP.net)} (${shareP}% Share)`;
+      } else {
+        document.getElementById("kpi-top-prod").textContent = "None";
+        document.getElementById("kpi-top-prod-sub").textContent = "$0.00";
+      }
+
+      // Aggregations
+      const catAgg = aggregateBy(rows, r => r.category).sort((a, b) => b.net - a.net);
+      const regAgg = aggregateBy(rows, r => r.region).sort((a, b) => b.net - a.net);
+      const monthOrder = ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"];
+      const monthMap = new Map(aggregateBy(rows, r => r.order_month).map(x => [x.key, x]));
+      const monthAgg = monthOrder
+        .filter(m => state.quarter === "ALL" || (state.quarter === "Q1" ? m <= "2026-03" : m >= "2026-04"))
+        .map(m => monthMap.get(m) || { key: m, orders: 0, units: 0, gross: 0, discount: 0, net: 0 });
+
+      // Render Category Matrix Table
+      const tbodyCat = document.getElementById("tbody-category");
+      tbodyCat.innerHTML = catAgg.map(item => {
+        const share = totalNet > 0 ? (item.net / totalNet) * 100 : 0;
+        const itemAov = item.orders > 0 ? item.net / item.orders : 0;
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-2 px-2 font-semibold text-white">${item.key}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${item.orders}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${item.units}</td>
+            <td class="py-2 px-2 text-right font-semibold text-sky-400">${fmtCurrency(item.net)}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${fmtCurrency(itemAov)}</td>
+            <td class="py-2 px-2">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-sky-500 rounded-full" style="width:${share.toFixed(1)}%"></div>
+                </div>
+                <span class="text-[11px] font-semibold text-slate-300 w-11 text-right">${share.toFixed(1)}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Render Region Matrix Table
+      const tbodyReg = document.getElementById("tbody-region");
+      tbodyReg.innerHTML = regAgg.map(item => {
+        const share = totalNet > 0 ? (item.net / totalNet) * 100 : 0;
+        const itemAov = item.orders > 0 ? item.net / item.orders : 0;
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-2 px-2 font-semibold text-white">${item.key}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${item.orders}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${item.units}</td>
+            <td class="py-2 px-2 text-right font-semibold text-emerald-400">${fmtCurrency(item.net)}</td>
+            <td class="py-2 px-2 text-right text-slate-300">${fmtCurrency(itemAov)}</td>
+            <td class="py-2 px-2">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width:${share.toFixed(1)}%"></div>
+                </div>
+                <span class="text-[11px] font-semibold text-slate-300 w-11 text-right">${share.toFixed(1)}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Render Product Leaderboard Table (Tab 2)
+      const tbodyProd = document.getElementById("tbody-products");
+      tbodyProd.innerHTML = prodAgg.map((item, idx) => {
+        const share = totalNet > 0 ? (item.net / totalNet) * 100 : 0;
+        const itemAov = item.orders > 0 ? item.net / item.orders : 0;
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="py-2.5 px-3 font-bold text-slate-400">#${idx + 1}</td>
+            <td class="py-2.5 px-3 font-semibold text-white">${item.key}</td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px]">${item.category}</span></td>
+            <td class="py-2.5 px-3 text-right text-slate-300">${item.orders}</td>
+            <td class="py-2.5 px-3 text-right text-slate-300">${item.units}</td>
+            <td class="py-2.5 px-3 text-right text-slate-400">${fmtCurrency(item.gross)}</td>
+            <td class="py-2.5 px-3 text-right text-rose-400">${fmtCurrency(item.discount)}</td>
+            <td class="py-2.5 px-3 text-right font-bold text-amber-400">${fmtCurrency(item.net)}</td>
+            <td class="py-2.5 px-3 text-right text-slate-300">${fmtCurrency(itemAov)}</td>
+            <td class="py-2.5 px-3">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-amber-500 rounded-full" style="width:${Math.min(100, share * 2.5).toFixed(1)}%"></div>
+                </div>
+                <span class="text-[11px] font-semibold text-slate-300 w-11 text-right">${share.toFixed(1)}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Render Orders Explorer Table (Tab 3)
+      const tbodyOrders = document.getElementById("tbody-orders");
+      tbodyOrders.innerHTML = rows.map(r => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="py-2 px-2.5 font-mono font-semibold text-sky-400">${r.order_id}</td>
+          <td class="py-2 px-2.5 text-slate-300">${r.order_date}</td>
+          <td class="py-2 px-2.5 font-medium text-white">${r.customer_name}</td>
+          <td class="py-2 px-2.5 text-slate-300">${r.region}</td>
+          <td class="py-2 px-2.5 text-slate-300">${r.category}</td>
+          <td class="py-2 px-2.5 text-slate-200">${r.product}</td>
+          <td class="py-2 px-2.5 text-right text-slate-300">${r.quantity}</td>
+          <td class="py-2 px-2.5 text-right text-slate-300">${fmtCurrency(r.unit_price)}</td>
+          <td class="py-2 px-2.5 text-right text-slate-400">${r.discount_pct.toFixed(0)}%</td>
+          <td class="py-2 px-2.5 text-right font-bold text-emerald-400">${fmtCurrency(r.total_sales)}</td>
+        </tr>
+      `).join("");
+
+      updateCharts(monthAgg, catAgg, regAgg, prodAgg);
+    }
+
+    function updateCharts(monthAgg, catAgg, regAgg, prodAgg) {
+      const gridColor = "rgba(148, 163, 184, 0.12)";
+      const tickColor = "#94a3b8";
+
+      // 1. Monthly Combo Chart
+      if (chartMonthly) chartMonthly.destroy();
+      const ctxM = document.getElementById("chart-monthly").getContext("2d");
+      chartMonthly = new Chart(ctxM, {
+        type: "bar",
+        data: {
+          labels: monthAgg.map(x => x.key),
+          datasets: [
+            {
+              type: "line",
+              label: "Net Sales ($)",
+              data: monthAgg.map(x => x.net),
+              borderColor: "#38bdf8",
+              backgroundColor: "rgba(56, 189, 248, 0.2)",
+              borderWidth: 3,
+              pointRadius: 5,
+              pointBackgroundColor: "#0284c7",
+              tension: 0.3,
+              yAxisID: "y"
+            },
+            {
+              type: "bar",
+              label: "Units Sold",
+              data: monthAgg.map(x => x.units),
+              backgroundColor: "rgba(99, 102, 241, 0.45)",
+              borderColor: "#6366f1",
+              borderWidth: 1,
+              borderRadius: 6,
+              yAxisID: "y1"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: tickColor, font: { size: 11 } } }
+          },
+          scales: {
+            x: { ticks: { color: tickColor }, grid: { color: gridColor } },
+            y: {
+              position: "left",
+              ticks: { color: tickColor, callback: v => "$" + v.toLocaleString() },
+              grid: { color: gridColor }
+            },
+            y1: {
+              position: "right",
+              ticks: { color: tickColor },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+
+      // 2. Category Doughnut Chart
+      if (chartCategory) chartCategory.destroy();
+      const ctxC = document.getElementById("chart-category").getContext("2d");
+      chartCategory = new Chart(ctxC, {
+        type: "doughnut",
+        data: {
+          labels: catAgg.map(x => x.key),
+          datasets: [{
+            data: catAgg.map(x => x.net),
+            backgroundColor: ["#0ea5e9", "#8b5cf6", "#f59e0b"],
+            borderColor: "#0f172a",
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: { position: "bottom", labels: { color: tickColor, padding: 14, font: { size: 11 } } }
+          }
+        }
+      });
+
+      // 3. Regional Bar Chart
+      if (chartRegion) chartRegion.destroy();
+      const ctxR = document.getElementById("chart-region").getContext("2d");
+      chartRegion = new Chart(ctxR, {
+        type: "bar",
+        data: {
+          labels: regAgg.map(x => x.key),
+          datasets: [{
+            label: "Net Sales ($)",
+            data: regAgg.map(x => x.net),
+            backgroundColor: ["#10b981", "#06b6d4", "#3b82f6", "#6366f1"],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tickColor, callback: v => "$" + v.toLocaleString() }, grid: { color: gridColor } },
+            y: { ticks: { color: tickColor }, grid: { display: false } }
+          }
+        }
+      });
+
+      // 4. Top Products Bar Chart
+      if (chartProducts) chartProducts.destroy();
+      const ctxP = document.getElementById("chart-products").getContext("2d");
+      const top8 = prodAgg.slice(0, 8);
+      chartProducts = new Chart(ctxP, {
+        type: "bar",
+        data: {
+          labels: top8.map(x => x.key),
+          datasets: [{
+            label: "Net Sales ($)",
+            data: top8.map(x => x.net),
+            backgroundColor: "#f59e0b",
+            borderRadius: 5
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tickColor, callback: v => "$" + v.toLocaleString() }, grid: { color: gridColor } },
+            y: { ticks: { color: tickColor, font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Wire up Region Slicers
+    document.querySelectorAll(".region-slicer").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".region-slicer").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.region = btn.getAttribute("data-filter-region");
+        renderDashboard();
+      });
+    });
+
+    // Wire up Category Slicers
+    document.querySelectorAll(".category-slicer").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".category-slicer").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.category = btn.getAttribute("data-filter-category");
+        renderDashboard();
+      });
+    });
+
+    // Wire up Quarter Slicers
+    document.querySelectorAll(".quarter-slicer").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".quarter-slicer").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.quarter = btn.getAttribute("data-filter-quarter");
+        renderDashboard();
+      });
+    });
+
+    // Wire up View Tabs
+    document.querySelectorAll(".view-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-tab");
+        state.activeTab = target;
+        document.querySelectorAll(".view-tab-btn").forEach(b => {
+          b.classList.remove("bg-sky-600", "text-white");
+          b.classList.add("text-slate-300");
+        });
+        btn.classList.add("bg-sky-600", "text-white");
+        btn.classList.remove("text-slate-300");
+
+        document.getElementById("view-overview").classList.toggle("hidden", target !== "overview");
+        document.getElementById("view-products").classList.toggle("hidden", target !== "products");
+        document.getElementById("view-orders").classList.toggle("hidden", target !== "orders");
+      });
+    });
+
+    // Wire up Search Input
+    document.getElementById("input-order-search").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      renderDashboard();
+    });
+
+    // Wire up Reset Button
+    document.getElementById("btn-reset-filters").addEventListener("click", () => {
+      state.region = "ALL";
+      state.category = "ALL";
+      state.quarter = "ALL";
+      state.search = "";
+      document.getElementById("input-order-search").value = "";
+      document.querySelectorAll(".region-slicer").forEach(b => b.classList.toggle("active", b.getAttribute("data-filter-region") === "ALL"));
+      document.querySelectorAll(".category-slicer").forEach(b => b.classList.toggle("active", b.getAttribute("data-filter-category") === "ALL"));
+      document.querySelectorAll(".quarter-slicer").forEach(b => b.classList.toggle("active", b.getAttribute("data-filter-quarter") === "ALL"));
+      renderDashboard();
+    });
+
+    // Wire up Export Filtered CSV
+    document.getElementById("btn-export-csv").addEventListener("click", () => {
+      const rows = getFilteredData();
+      const headers = ["order_id","order_date","order_month","customer_name","region","category","product","quantity","unit_price","discount_pct","gross_sales","discount_amount","total_sales"];
+      const csvLines = [
+        headers.join(","),
+        ...rows.map(r => [
+          r.order_id, r.order_date, r.order_month, `"${r.customer_name}"`, r.region, r.category, `"${r.product}"`,
+          r.quantity, r.unit_price.toFixed(2), r.discount_pct.toFixed(1), r.gross_sales.toFixed(2), r.discount_amount.toFixed(2), r.total_sales.toFixed(2)
+        ].join(","))
+      ];
+      const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "codeorbit_filtered_sales_dashboard.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const toast = document.getElementById("status-toast");
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 2500);
+    });
+
+    window.addEventListener("DOMContentLoaded", renderDashboard);
+  </script>
+</body>
+</html>
